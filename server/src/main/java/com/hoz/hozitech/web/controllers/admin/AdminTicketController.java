@@ -1,0 +1,58 @@
+package com.hoz.hozitech.web.controllers.admin;
+
+import com.hoz.hozitech.application.constant.PaginationConstant;
+import com.hoz.hozitech.web.base.RestAPI;
+import com.hoz.hozitech.web.base.RoleAdmin;
+import com.hoz.hozitech.application.services.ticket.TicketService;
+import com.hoz.hozitech.config.utils.LocalizedApiResponseFactory;
+import com.hoz.hozitech.domain.dtos.request.TicketMessageRequest;
+import com.hoz.hozitech.domain.dtos.response.ApiResponse;
+import com.hoz.hozitech.domain.dtos.response.PageResponse;
+import com.hoz.hozitech.domain.dtos.response.TicketResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.UUID;
+
+@RestAPI("${api.prefix-admin}/tickets")
+@RoleAdmin
+@RequiredArgsConstructor
+public class AdminTicketController {
+
+    private final TicketService ticketService;
+    private final LocalizedApiResponseFactory responseFactory;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<TicketResponse>>> getAllTickets(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = PaginationConstant.PAGE_DEFAULT_STR) int page,
+            @RequestParam(defaultValue = PaginationConstant.PAGE_SIZE_MEDIUM_STR) int size) {
+        return ResponseEntity.ok(responseFactory.success("response.admin_ticket.list_fetched",
+                ticketService.getAllTickets(status, page, size)));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<TicketResponse>> getTicketDetail(@PathVariable UUID id) {
+        return ResponseEntity.ok(responseFactory.success("response.admin_ticket.fetched",
+                ticketService.getTicketByIdAdmin(id)));
+    }
+
+    @PostMapping("/{id}/reply")
+    public ResponseEntity<ApiResponse<TicketResponse>> adminReplyToTicket(
+            @PathVariable UUID id,
+            @Valid @RequestBody TicketMessageRequest request) {
+        return ResponseEntity.ok(responseFactory.success("response.admin_ticket.reply_sent",
+                ticketService.adminReplyToTicket(id, request)));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<TicketResponse>> updateTicketStatus(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(responseFactory.success("response.admin_ticket.status_updated",
+                ticketService.updateTicketStatus(id, body.get("status"))));
+    }
+}

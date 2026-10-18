@@ -1,0 +1,34 @@
+package com.hoz.hozitech.web.controllers.pub;
+
+import com.hoz.hozitech.web.base.RestAPI;
+import com.hoz.hozitech.application.services.category.CategoryService;
+import com.hoz.hozitech.config.utils.LocalizedApiResponseFactory;
+import com.hoz.hozitech.domain.dtos.response.ApiResponse;
+import com.hoz.hozitech.domain.dtos.response.CategoryResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+
+@RestAPI("${api.prefix-client}/categories")
+@RequiredArgsConstructor
+public class CategoryController {
+
+    private final CategoryService categoryService;
+    private final LocalizedApiResponseFactory responseFactory;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories() {
+        return ResponseEntity
+                .ok(responseFactory.success("response.category.active_list_fetched",
+                        categoryService.getAllActiveCategories()));
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryBySlug(@PathVariable String slug) {
+        return ResponseEntity
+                .ok(responseFactory.success("response.category.fetched", categoryService.getCategoryBySlug(slug)));
+    }
+}

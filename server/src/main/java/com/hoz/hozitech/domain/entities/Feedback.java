@@ -1,0 +1,67 @@
+package com.hoz.hozitech.domain.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hoz.hozitech.domain.entities.base.AbstractAuditingEntity;
+import com.hoz.hozitech.domain.enums.FeedbackStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "feedbacks", indexes = {
+        @Index(name = "idx_feedback_product", columnList = "product_id"),
+        @Index(name = "idx_feedback_user", columnList = "user_id")
+})
+public class Feedback extends AbstractAuditingEntity {
+
+    @Min(1)
+    @Max(5)
+    @Column(name = "rating", nullable = false)
+    private Integer rating;
+
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "images_json", columnDefinition = "jsonb")
+    private String imagesJson;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 50)
+    private FeedbackStatus status = FeedbackStatus.APPROVED;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id")
+    private ProductVariant variant;
+
+    @Column(name = "admin_reply", columnDefinition = "TEXT")
+    private String adminReply;
+
+    @Column(name = "replied_at")
+    private java.time.LocalDateTime repliedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @Builder.Default
+    @Column(name = "edit_count", columnDefinition = "integer default 0")
+    private Integer editCount = 0;
+}

@@ -1,0 +1,149 @@
+spring:
+  application:
+    name: hozitech-server
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:.env.dev[.properties]
+      - optional:file:server/.env[.properties]
+      - optional:file:server/.env.dev[.properties]
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:50MB}
+      max-request-size: ${MAX_REQUEST_SIZE:100MB}
+
+  messages:
+    basename: i18n/messages
+    encoding: utf-8
+
+  output:
+    ansi:
+      enabled: always
+
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  timezone: ${APP_TIMEZONE:Asia/Ho_Chi_Minh}
+  export:
+    storage-dir: ${EXPORT_STORAGE_DIR:storage/exports}
+    rows-per-file: ${EXPORT_ROWS_PER_FILE:50000}
+    batch-size: ${EXPORT_BATCH_SIZE:1000}
+    ttl-days: ${EXPORT_TTL_DAYS:7}
+    cleanup-interval-ms: ${EXPORT_CLEANUP_INTERVAL_MS:3600000}
+
+api:
+  #public api
+  prefix-client: api/v1
+  #admin api
+  prefix-admin: admin/api/v1
+security:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000}
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  # 7 days
+  access-expiration: ${JWT_ACCESS_EXPIRATION:604800}
+  # 30 days
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000}
+
+link:
+  frontend: ${URL_FRONTEND:http://localhost:3000}
+
+spring.cloud:
+  aws:
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+    region: ${AWS_REGION:ap-southeast-1}
+    bucket-name: ${AWS_BUCKET_NAME:}
+
+spring.mail:
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+
+payment:
+  pending-order:
+    scan-rate-ms: ${PAYMENT_PENDING_ORDER_SCAN_RATE_MS:300000}
+  webhook:
+    # Set true only for local testing when provider signatures are not available
+    allow-unsigned: ${PAYMENT_WEBHOOK_ALLOW_UNSIGNED:false}
+    max-timestamp-skew-seconds: ${PAYMENT_WEBHOOK_MAX_SKEW_SECONDS:300}
+    # Shared fallback secret for unknown/custom providers
+    default-secret: ${PAYMENT_WEBHOOK_SECRET:}
+    # Provider-specific secrets
+    vnpay-secret: ${VNPAY_WEBHOOK_SECRET:}
+    momo-secret: ${MOMO_WEBHOOK_SECRET:}
+    bank-transfer-secret: ${BANK_TRANSFER_WEBHOOK_SECRET:}
+
+vnpay:
+  tmn-code: ${VNPAY_TMN_CODE:}
+  hash-secret: ${VNPAY_HASH_SECRET:}
+  pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+  return-url: ${VNPAY_RETURN_URL:http://localhost:3000/payment/vnpay-return}
+  api-url: ${VNPAY_API_URL:https://sandbox.vnpayment.vn/merchant_webapi/api/transaction}
+  version: "2.1.0"
+  command: pay
+  expire-minutes: ${VNPAY_EXPIRE_MINUTES:15}
+  pending-timeout-minutes: ${VNPAY_PENDING_TIMEOUT_MINUTES:${VNPAY_EXPIRE_MINUTES:15}}
+
+momo:
+  partner-code: ${MOMO_PARTNER_CODE:}
+  access-key: ${MOMO_ACCESS_KEY:}
+  secret-key: ${MOMO_SECRET_KEY:}
+  endpoint: ${MOMO_ENDPOINT:https://test-payment.momo.vn/v2/gateway/api}
+  create-path: ${MOMO_CREATE_PATH:/create}
+  redirect-url: ${MOMO_REDIRECT_URL:http://localhost:3000/payment/momo-return}
+  ipn-url: ${MOMO_IPN_URL:http://localhost:8080/api/v1/public/payments/momo/ipn}
+  request-type: ${MOMO_REQUEST_TYPE:captureWallet}
+  auto-capture: ${MOMO_AUTO_CAPTURE:true}
+  pending-timeout-minutes: ${MOMO_PENDING_TIMEOUT_MINUTES:15}
+
+bank-transfer:
+  pending-timeout-minutes: ${BANK_TRANSFER_PENDING_TIMEOUT_MINUTES:1440}
+
+social:
+  google:
+    authorization-url: ${SOCIAL_GOOGLE_AUTHORIZATION_URL:https://accounts.google.com/o/oauth2/v2/auth}
+    token-url: ${SOCIAL_GOOGLE_TOKEN_URL:https://oauth2.googleapis.com/token}
+    callback-url: ${SOCIAL_GOOGLE_CALLBACK_URL:http://localhost:8080/api/v1/auth/google/callback}
+    frontend-base-url: ${SOCIAL_GOOGLE_FRONTEND_BASE_URL:http://localhost:3000}
+    # ISO datetime (e.g. 2026-05-12T00:00:00) to support temporary legacy fallback
+    legacy-fallback-until: ${SOCIAL_GOOGLE_LEGACY_FALLBACK_UNTIL:}
